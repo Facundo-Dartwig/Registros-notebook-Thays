@@ -48,15 +48,14 @@ document.getElementById("computerForm").addEventListener("submit", function(even
     const prestador = document.getElementById("prestador").value;
     const fechaHora = document.getElementById("fechaHora").value;  // Obtener la fecha y hora del campo
 
-    // Obtener todos los modelos ingresados
     const modelos = Array.from(document.querySelectorAll(".modelo")).map(input => input.value);
 
     let computadoras = JSON.parse(localStorage.getItem("computadoras")) || [];
 
-    // Registrar cada computadora con los modelos diferentes
     modelos.forEach(modelo => {
         const computadora = { responsable, curso, modelo, prestador, fechaHora };
         computadoras.push(computadora);
+        registrarEnExcel(computadora, "Egreso");
     });
 
     // Guardar en localStorage
@@ -124,13 +123,56 @@ function eliminarComputadora(index) {
     computadoras.splice(index, 1);
     localStorage.setItem("computadoras", JSON.stringify(computadoras));
     mostrarComputadoras();
+
+    const fechaHoraEliminacion = new Date().toISOString();
+    eliminada.fechaHoraEliminacion = fechaHoraEliminacion;
+    registrarEnExcel(eliminada, "Egreso");
 }
 
 // Función para eliminar todos los registros de computadoras
 document.getElementById("clearAllBtn").addEventListener("click", function() {
+    let computadoras = JSON.parse(localStorage.getItem("computadoras")) || [];
+    const fechaHoraEliminacion = new Date().toISOString();
+
+    computadoras.forEach(computadora => {
+        computadora.fechaHoraEliminacion = fechaHoraEliminacion;
+        registrarEnExcel(computadora, "Ingreso");
+    });
+
     localStorage.removeItem("computadoras");
     mostrarComputadoras();
 });
+
+// Función para registrar en Excel y descargar el archivo
+function registrarEnExcel(datos, tipo) {
+    const computadorasExcel = datos.map(computadora => ({
+        Responsable: computadora.responsable,
+        Curso: computadora.curso,
+        Modelo: computadora.modelo,
+        Prestador: computadora.prestador,
+        "Fecha y Hora de Registro": formatearFechaHora(computadora.fechaHora),
+        Tipo: tipo,  // Ingreso o Egreso
+        "Fecha y Hora de Eliminación": computadora.fechaHoraEliminacion ? formatearFechaHora(computadora.fechaHoraEliminacion) : ""
+    }));
+
+    const wb = XLSX.utils.book_new();  // Crear un nuevo libro de Excel
+    const ws = XLSX.utils.json_to_sheet(computadorasExcel);  // Convertir los datos JSON a hoja de Excel
+    XLSX.utils.book_append_sheet(wb, ws, "Computadoras");  // Añadir la hoja al libro
+    return wb;
+}
+
+// Función para descargar el archivo Excel
+function descargarExcel() {
+    const computadoras = JSON.parse(localStorage.getItem("computadoras")) || [];
+    const wb = registrarEnExcel(computadoras, "Ingreso");
+
+    // Descarga el archivo Excel generado
+    XLSX.writeFile(wb, "computadoras_registro.xlsx");
+}
+
+// Asignar el evento al botón de descarga
+document.getElementById("downloadExcelBtn").addEventListener("click", descargarExcel);
+
 
 // Mostrar las computadoras al cargar la página
 mostrarComputadoras();
