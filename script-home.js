@@ -1,9 +1,8 @@
-// Array para guardar los registros
-let computadorasArray = [];
+// Array para guardar los registros, se recupera desde el localStorage para persistencia
+let computadorasArray = JSON.parse(localStorage.getItem("computadorasArray")) || [];
 
 // Verificar si el usuario está autenticado
 const isAuthenticated = localStorage.getItem("isAuthenticated");
-
 if (!isAuthenticated || isAuthenticated !== "true") {
     window.location.href = "index.html";
 }
@@ -41,8 +40,12 @@ document.getElementById("computerForm").addEventListener("submit", function(even
         computadorasArray.push(computadora);
     });
 
+    // Guardar en localStorage para persistencia
+    localStorage.setItem("computadorasArray", JSON.stringify(computadorasArray));
+
     mostrarComputadoras();
 
+    // Resetear formulario
     document.getElementById("computerForm").reset();
     document.getElementById("modelosContainer").innerHTML = '<input type="text" class="modelo" placeholder="Ej: Inspiron 15" required>';
 });
@@ -53,53 +56,61 @@ function mostrarComputadoras() {
     tableBody.innerHTML = "";
 
     computadorasArray.forEach(function(computadora, index) {
-        const row = document.createElement("tr");
+        if (computadora.accion !== "Egreso") {  // Mostrar solo los ingresos visualmente
+            const row = document.createElement("tr");
 
-        const responsableCell = document.createElement("td");
-        responsableCell.textContent = computadora.responsable;
+            const responsableCell = document.createElement("td");
+            responsableCell.textContent = computadora.responsable;
 
-        const cursoCell = document.createElement("td");
-        cursoCell.textContent = computadora.curso;
+            const cursoCell = document.createElement("td");
+            cursoCell.textContent = computadora.curso;
 
-        const modeloCell = document.createElement("td");
-        modeloCell.textContent = computadora.modelo;
+            const modeloCell = document.createElement("td");
+            modeloCell.textContent = computadora.modelo;
 
-        const prestadorCell = document.createElement("td");
-        prestadorCell.textContent = computadora.prestador;
+            const prestadorCell = document.createElement("td");
+            prestadorCell.textContent = computadora.prestador;
 
-        const fechaHoraCell = document.createElement("td");
-        fechaHoraCell.textContent = formatearFechaHora(computadora.fechaHora);
+            const fechaHoraCell = document.createElement("td");
+            fechaHoraCell.textContent = formatearFechaHora(computadora.fechaHora);
 
-        const accionesCell = document.createElement("td");
-        const deleteBtn = document.createElement("button");
-        deleteBtn.textContent = "Eliminar";
-        deleteBtn.className = "delete-btn";
-        deleteBtn.addEventListener("click", function() {
-            eliminarComputadora(index);
-        });
+            const accionesCell = document.createElement("td");
+            const deleteBtn = document.createElement("button");
+            deleteBtn.textContent = "Eliminar";
+            deleteBtn.className = "delete-btn";
+            deleteBtn.addEventListener("click", function() {
+                eliminarComputadora(index);
+            });
 
-        accionesCell.appendChild(deleteBtn);
-        row.appendChild(responsableCell);
-        row.appendChild(cursoCell);
-        row.appendChild(modeloCell);
-        row.appendChild(prestadorCell);
-        row.appendChild(fechaHoraCell);
-        row.appendChild(accionesCell);
+            accionesCell.appendChild(deleteBtn);
+            row.appendChild(responsableCell);
+            row.appendChild(cursoCell);
+            row.appendChild(modeloCell);
+            row.appendChild(prestadorCell);
+            row.appendChild(fechaHoraCell);
+            row.appendChild(accionesCell);
 
-        tableBody.appendChild(row);
+            tableBody.appendChild(row);
+        }
     });
 }
 
 // Función para eliminar una computadora individualmente (visualmente)
 function eliminarComputadora(index) {
-    // Mantener los datos en el array pero eliminar de la vista
+    const fechaEgreso = new Date().toISOString();  // Registrar la fecha de egreso
     computadorasArray[index].accion = "Egreso";
-    mostrarComputadoras();  // Solo actualiza la vista, no toca el array
+    computadorasArray[index].fechaHoraEgreso = fechaEgreso;
+
+    // Guardar en localStorage
+    localStorage.setItem("computadorasArray", JSON.stringify(computadorasArray));
+
+    // Mostrar solo los ingresos en la tabla
+    mostrarComputadoras();
 }
 
 // Función para eliminar todos los registros de computadoras visualmente
 document.getElementById("clearAllBtn").addEventListener("click", function() {
-    // Simplemente vacía la tabla, pero no el array
+    // Limpiar la tabla visualmente, pero los datos permanecen en el array
     const tableBody = document.querySelector("#computerTable tbody");
     tableBody.innerHTML = "";
 });
@@ -107,8 +118,22 @@ document.getElementById("clearAllBtn").addEventListener("click", function() {
 // Descargar Excel con datos del array
 document.getElementById("downloadExcelBtn").addEventListener("click", function() {
     const wb = XLSX.utils.book_new();
-    const ws = XLSX.utils.json_to_sheet(computadorasArray);
+
+    // Convertir el array a un formato adecuado para el Excel
+    const data = computadorasArray.map(computadora => ({
+        Responsable: computadora.responsable,
+        Curso: computadora.curso,
+        Modelo: computadora.modelo,
+        Prestador: computadora.prestador,
+        FechaHoraIngreso: computadora.fechaHora ? formatearFechaHora(computadora.fechaHora) : '',
+        FechaHoraEgreso: computadora.fechaHoraEgreso ? formatearFechaHora(computadora.fechaHoraEgreso) : '',
+        Accion: computadora.accion,
+    }));
+
+    const ws = XLSX.utils.json_to_sheet(data);
     XLSX.utils.book_append_sheet(wb, ws, "RegistrosComputadoras");
+
+    // Descargar el archivo
     XLSX.writeFile(wb, "registros_computadoras.xlsx");
 });
 
