@@ -111,19 +111,21 @@ function eliminarComputadora(index) {
 // Botón para eliminar todos los registros
 document.getElementById("clearAllBtn").addEventListener("click", clearAllComputers);
 
-// Función para eliminar todos los registros visualmente y registrarlos en el Excel
 function clearAllComputers() {
-    const computadoras = JSON.parse(localStorage.getItem('computadoras')) || [];
-
-    computadoras.forEach(computadora => {
-        computadora.fechaHoraEliminacion = new Date().toISOString(); 
-        computadorasArray[index].accion = "Ingreso";
-        computadorasArray[index].fechaHoraEgreso = computadora;
+    const fechaEgreso = new Date().toISOString(); // Fecha y hora del egreso
+    computadorasArray.forEach((computadora, index) => {
+        computadorasArray[index].accion = "Ingreso";  // Cambiar a "Ingreso" para marcar en el Excel
+        computadorasArray[index].fechaHoraEgreso = fechaEgreso;  // Registrar la fecha de egreso
     });
 
+    // Guardar el array actualizado en localStorage
+    localStorage.setItem("computadorasArray", JSON.stringify(computadorasArray));
+
+    // Limpiar visualmente la tabla
     document.querySelector("#computerTable tbody").innerHTML = '';
 
-    localStorage.removeItem('computadoras');
+    mostrarComputadoras();
+    // Aquí no eliminamos del array, solo limpiamos la visualización
 }
 
 // Descargar Excel con datos del array
