@@ -119,7 +119,6 @@ function clearAllComputers() {
         computadora.fechaHoraEliminacion = new Date().toISOString(); 
         computadorasArray[index].accion = "Ingreso";
         computadorasArray[index].fechaHoraEgreso = computadora;
-        registrosExcel.push(computadora); // Guardar en el array para el Excel
     });
 
     document.querySelector("#computerTable tbody").innerHTML = '';
