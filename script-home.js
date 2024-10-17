@@ -48,8 +48,6 @@ document.getElementById("computerForm").addEventListener("submit", function(even
     modelos.forEach(modelo => {
         const computadora = { responsable, curso, modelo, prestador, fechaHora };
         computadoras.push(computadora);
-        // Registrar en Excel como "Ingreso"
-        registrarEnExcel([computadora], "Ingreso");
     });
 
     localStorage.setItem("computadoras", JSON.stringify(computadoras));
@@ -105,28 +103,19 @@ function mostrarComputadoras() {
 // Función para eliminar computadora
 function eliminarComputadora(index, computadora) {
     let computadoras = JSON.parse(localStorage.getItem("computadoras")) || [];
-    const eliminada = computadoras.splice(index, 1)[0];
+    computadoras.splice(index, 1);
     localStorage.setItem("computadoras", JSON.stringify(computadoras));
     mostrarComputadoras();
-
-    const fechaHoraEliminacion = new Date().toISOString();
-    eliminada.fechaHoraEliminacion = fechaHoraEliminacion;
-    registrarEnExcel([eliminada], "Egreso");
 }
 
 // Función para eliminar todas las computadoras
 document.getElementById("clearAllBtn").addEventListener("click", function() {
-    let computadoras = JSON.parse(localStorage.getItem("computadoras")) || [];
-    const fechaHoraEliminacion = new Date().toISOString();
-    computadoras.forEach(computadora => computadora.fechaHoraEliminacion = fechaHoraEliminacion);
-    registrarEnExcel(computadoras, "Egreso");
-
     localStorage.removeItem("computadoras");
     mostrarComputadoras();
 });
 
 // Función para registrar en Excel
-function registrarEnExcel(datos, tipo) {
+function registrarEnExcel(datos) {
     const workbook = XLSX.utils.book_new();
     const headers = ["Responsable", "Curso", "N° Notebook", "Prestador", "Fecha/Hora", "Tipo"];
     const rows = datos.map(computadora => [
@@ -134,19 +123,20 @@ function registrarEnExcel(datos, tipo) {
         computadora.curso,
         computadora.modelo,
         computadora.prestador,
-        formatearFechaHora(computadora.fechaHoraEliminacion || computadora.fechaHora),
-        tipo
+        formatearFechaHora(computadora.fechaHora),
+        computadora.tipo
     ]);
     rows.unshift(headers);
     const worksheet = XLSX.utils.aoa_to_sheet(rows);
     XLSX.utils.book_append_sheet(workbook, worksheet, "Registros");
-    XLSX.writeFile(workbook, "Registros_Computadoras.xlsx");
+    return workbook; // Devolvemos el workbook para usarlo más adelante
 }
 
 // Descargar el archivo Excel con los registros actuales
 document.getElementById("downloadExcelBtn").addEventListener("click", function() {
     const computadoras = JSON.parse(localStorage.getItem("computadoras")) || [];
-    registrarEnExcel(computadoras, "Ingreso");
+    const workbook = registrarEnExcel(computadoras);
+    XLSX.writeFile(workbook, "Registros_Computadoras.xlsx");
 });
 
 // Cargar registros al cargar la página
