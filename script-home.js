@@ -108,27 +108,22 @@ function eliminarComputadora(index) {
     mostrarComputadoras();
 }
 
-
 // Botón para eliminar todos los registros
 document.getElementById("clearAllBtn").addEventListener("click", clearAllComputers);
-
-
 
 // Función para eliminar todos los registros visualmente y registrarlos en el Excel
 function clearAllComputers() {
     const computadoras = JSON.parse(localStorage.getItem('computadoras')) || [];
 
-    // Guardar los registros eliminados como egreso
     computadoras.forEach(computadora => {
-        computadora.fechaHoraEliminacion = new Date().toISOString(); // Registrar la fecha de eliminación
-        computadora.tipo = 'Ingreso';
+        computadora.fechaHoraEliminacion = new Date().toISOString(); 
+        computadorasArray[index].accion = "Ingreso";
+        computadorasArray[index].fechaHoraEgreso = computadora;
         registrosExcel.push(computadora); // Guardar en el array para el Excel
     });
 
-    // Limpiar visualmente la tabla
     document.querySelector("#computerTable tbody").innerHTML = '';
 
-    // Eliminar las computadoras del localStorage (solo para la vista)
     localStorage.removeItem('computadoras');
 }
 
