@@ -52,7 +52,7 @@ document.getElementById("computerForm").addEventListener("submit", function(even
             modelo, 
             prestador, 
             fechaHora, 
-            estado: 'Ingreso'  // Marcamos el estado como ingreso
+            estado: 'Egreso'  // Marcamos el estado como ingreso
         };
         computadoras.push(computadora);
     });
@@ -104,7 +104,6 @@ function mostrarComputadoras() {
         row.appendChild(modeloCell);
         row.appendChild(prestadorCell);
         row.appendChild(fechaHoraCell);
-        row.appendChild(estadoCell);
         row.appendChild(accionesCell);
         tableBody.appendChild(row);
     });
@@ -117,7 +116,7 @@ function eliminarComputadora(index) {
     const computadoraEliminada = computadoras[index];
 
     // Modificamos el estado de la computadora a "Egreso" y guardamos la fecha/hora de eliminación
-    computadoraEliminada.estado = 'Egreso';
+    computadoraEliminada.estado = 'Ingreso';
     computadoraEliminada.fechaHoraEliminacion = fechaHoraEliminacion;
 
     computadoras[index] = computadoraEliminada; // Actualizamos el registro
