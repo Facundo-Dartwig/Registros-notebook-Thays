@@ -19,7 +19,7 @@ document.getElementById("addModelBtn").addEventListener("click", function() {
     const newInput = document.createElement("input");
     newInput.type = "text";
     newInput.className = "modelo";
-    newInput.placeholder = "Ej: Inspiron 15";
+    newInput.placeholder = "Ej: 15";
     newInput.required = true;
     modelosContainer.appendChild(newInput);
 });
@@ -36,7 +36,7 @@ document.getElementById("computerForm").addEventListener("submit", function(even
     const modelos = Array.from(document.querySelectorAll(".modelo")).map(input => input.value);
 
     modelos.forEach(modelo => {
-        const computadora = { responsable, curso, modelo, prestador, fechaHora, accion: "Ingreso" };
+        const computadora = { responsable, curso, modelo, prestador, fechaHora, accion: "Egreso" };
         computadorasArray.push(computadora);
     });
 
@@ -56,7 +56,7 @@ function mostrarComputadoras() {
     tableBody.innerHTML = "";
 
     computadorasArray.forEach(function(computadora, index) {
-        if (computadora.accion !== "Egreso") {  // Mostrar solo los ingresos visualmente
+        if (computadora.accion !== "Ingreso") { 
             const row = document.createElement("tr");
 
             const responsableCell = document.createElement("td");
@@ -97,8 +97,8 @@ function mostrarComputadoras() {
 
 // Función para eliminar una computadora individualmente (visualmente)
 function eliminarComputadora(index) {
-    const fechaEgreso = new Date().toISOString();  // Registrar la fecha de egreso
-    computadorasArray[index].accion = "Egreso";
+    const fechaEgreso = new Date().toISOString();
+    computadorasArray[index].accion = "Ingreso";
     computadorasArray[index].fechaHoraEgreso = fechaEgreso;
 
     // Guardar en localStorage
@@ -108,12 +108,29 @@ function eliminarComputadora(index) {
     mostrarComputadoras();
 }
 
-// Función para eliminar todos los registros de computadoras visualmente
-document.getElementById("clearAllBtn").addEventListener("click", function() {
-    // Limpiar la tabla visualmente, pero los datos permanecen en el array
-    const tableBody = document.querySelector("#computerTable tbody");
-    tableBody.innerHTML = "";
-});
+
+// Botón para eliminar todos los registros
+document.getElementById("clearAllBtn").addEventListener("click", clearAllComputers);
+
+
+
+// Función para eliminar todos los registros visualmente y registrarlos en el Excel
+function clearAllComputers() {
+    const computadoras = JSON.parse(localStorage.getItem('computadoras')) || [];
+
+    // Guardar los registros eliminados como egreso
+    computadoras.forEach(computadora => {
+        computadora.fechaHoraEliminacion = new Date().toISOString(); // Registrar la fecha de eliminación
+        computadora.tipo = 'Ingreso';
+        registrosExcel.push(computadora); // Guardar en el array para el Excel
+    });
+
+    // Limpiar visualmente la tabla
+    document.querySelector("#computerTable tbody").innerHTML = '';
+
+    // Eliminar las computadoras del localStorage (solo para la vista)
+    localStorage.removeItem('computadoras');
+}
 
 // Descargar Excel con datos del array
 document.getElementById("downloadExcelBtn").addEventListener("click", function() {
