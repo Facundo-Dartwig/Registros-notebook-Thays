@@ -21,6 +21,9 @@ function formatearFechaHora(fechaHoraISO) {
     return `${dia}/${mes}/${anio} ${horas}:${minutos} hs`;
 }
 
+// Array para almacenar los registros de computadoras
+let computadoras = JSON.parse(localStorage.getItem("computadoras")) || [];
+
 // Agregar más campos de modelo dinámicamente
 document.getElementById("addModelBtn").addEventListener("click", function() {
     const modelosContainer = document.getElementById("modelosContainer");
@@ -43,8 +46,6 @@ document.getElementById("computerForm").addEventListener("submit", function(even
 
     const modelos = Array.from(document.querySelectorAll(".modelo")).map(input => input.value);
 
-    let computadoras = JSON.parse(localStorage.getItem("computadoras")) || [];
-
     modelos.forEach(modelo => {
         const computadora = { 
             responsable, 
@@ -52,7 +53,7 @@ document.getElementById("computerForm").addEventListener("submit", function(even
             modelo, 
             prestador, 
             fechaHora, 
-            estado: 'Egreso'  // Marcamos el estado como ingreso
+            estado: 'Ingreso'  // Marcamos el estado como ingreso
         };
         computadoras.push(computadora);
     });
@@ -66,7 +67,6 @@ document.getElementById("computerForm").addEventListener("submit", function(even
 
 // Función para mostrar las computadoras en la tabla
 function mostrarComputadoras() {
-    const computadoras = JSON.parse(localStorage.getItem("computadoras")) || [];
     const tableBody = document.querySelector("#computerTable tbody");
     tableBody.innerHTML = "";
 
@@ -111,12 +111,11 @@ function mostrarComputadoras() {
 
 // Función para eliminar computadora
 function eliminarComputadora(index) {
-    let computadoras = JSON.parse(localStorage.getItem("computadoras")) || [];
-    const fechaHoraEliminacion = new Date().toISOString(); // Fecha y hora actual para eliminación
     const computadoraEliminada = computadoras[index];
+    const fechaHoraEliminacion = new Date().toISOString(); // Fecha y hora actual para eliminación
 
     // Modificamos el estado de la computadora a "Egreso" y guardamos la fecha/hora de eliminación
-    computadoraEliminada.estado = 'Ingreso';
+    computadoraEliminada.estado = 'Egreso';
     computadoraEliminada.fechaHoraEliminacion = fechaHoraEliminacion;
 
     computadoras[index] = computadoraEliminada; // Actualizamos el registro
@@ -127,7 +126,8 @@ function eliminarComputadora(index) {
 // Función para eliminar todos los registros
 document.getElementById("clearAllBtn").addEventListener("click", function() {
     if (confirm("¿Estás seguro de que quieres eliminar todos los registros?")) {
-        localStorage.removeItem("computadoras");
+        computadoras = []; // Limpiamos el array
+        localStorage.removeItem("computadoras"); // Limpiamos el localStorage
         mostrarComputadoras();
     }
 });
@@ -151,10 +151,9 @@ function registrarEnExcel(computadoras) {
 
 // Descargar el archivo Excel con los registros actuales
 document.getElementById("downloadExcelBtn").addEventListener("click", function() {
-    const computadoras = JSON.parse(localStorage.getItem("computadoras")) || [];
     if (computadoras.length === 0) {
         alert("No hay registros para descargar.");
-        return;
+        return;  // No intentar descargar si no hay registros
     }
     const workbook = registrarEnExcel(computadoras);
     XLSX.writeFile(workbook, "Registros_Computadoras.xlsx");
