@@ -1,6 +1,5 @@
 // Verificar si el usuario está autenticado
 const isAuthenticated = localStorage.getItem("isAuthenticated");
-
 if (!isAuthenticated || isAuthenticated !== "true") {
     window.location.href = "index.html";
 }
@@ -11,42 +10,36 @@ document.getElementById("logoutBtn").addEventListener("click", function() {
     window.location.href = "index.html";
 });
 
-// Función para formatear la fecha y hora en el formato latinoamericano (dd/mm/yyyy hh:mm hs)
+// Formatear fecha y hora en formato latinoamericano
 function formatearFechaHora(fechaHoraISO) {
     const fecha = new Date(fechaHoraISO);
-    
     const dia = fecha.getDate().toString().padStart(2, '0');
-    const mes = (fecha.getMonth() + 1).toString().padStart(2, '0');  // Los meses en JS son 0-11
+    const mes = (fecha.getMonth() + 1).toString().padStart(2, '0');
     const anio = fecha.getFullYear();
-
     const horas = fecha.getHours().toString().padStart(2, '0');
     const minutos = fecha.getMinutes().toString().padStart(2, '0');
-
     return `${dia}/${mes}/${anio} ${horas}:${minutos} hs`;
 }
-
 
 // Agregar más campos de modelo dinámicamente
 document.getElementById("addModelBtn").addEventListener("click", function() {
     const modelosContainer = document.getElementById("modelosContainer");
-    
     const newInput = document.createElement("input");
     newInput.type = "text";
     newInput.className = "modelo";
-    newInput.placeholder = "Ej: Inspiron 15";
+    newInput.placeholder = "Ej: 15";
     newInput.required = true;
-
     modelosContainer.appendChild(newInput);
 });
 
-// Registrar varias computadoras con diferentes modelos
+// Función para registrar computadoras
 document.getElementById("computerForm").addEventListener("submit", function(event) {
     event.preventDefault();
 
     const responsable = document.getElementById("responsable").value;
     const curso = document.getElementById("curso").value;
     const prestador = document.getElementById("prestador").value;
-    const fechaHora = document.getElementById("fechaHora").value;  // Obtener la fecha y hora del campo
+    const fechaHora = document.getElementById("fechaHora").value;
 
     const modelos = Array.from(document.querySelectorAll(".modelo")).map(input => input.value);
 
@@ -55,28 +48,21 @@ document.getElementById("computerForm").addEventListener("submit", function(even
     modelos.forEach(modelo => {
         const computadora = { responsable, curso, modelo, prestador, fechaHora };
         computadoras.push(computadora);
-        registrarEnExcel(computadora, "Egreso");
+        // Registrar en Excel como "Ingreso"
+        registrarEnExcel([computadora], "Ingreso");
     });
 
-    // Guardar en localStorage
     localStorage.setItem("computadoras", JSON.stringify(computadoras));
-
-    // Mostrar mensaje de éxito
     alert("Computadoras registradas correctamente");
-
-    // Limpiar formulario y modelos adicionales
     document.getElementById("computerForm").reset();
-    document.getElementById("modelosContainer").innerHTML = '<input type="text" class="modelo" placeholder="Ej: Inspiron 15" required>';
-
-    // Actualizar tabla
+    document.getElementById("modelosContainer").innerHTML = '<input type="text" class="modelo" placeholder="Ej: 15" required>';
     mostrarComputadoras();
 });
 
-// Función para mostrar las computadoras registradas en la tabla
+// Función para mostrar las computadoras en la tabla
 function mostrarComputadoras() {
     const computadoras = JSON.parse(localStorage.getItem("computadoras")) || [];
     const tableBody = document.querySelector("#computerTable tbody");
-
     tableBody.innerHTML = "";
 
     computadoras.forEach(function(computadora, index) {
@@ -100,9 +86,8 @@ function mostrarComputadoras() {
         const accionesCell = document.createElement("td");
         const deleteBtn = document.createElement("button");
         deleteBtn.textContent = "Eliminar";
-        deleteBtn.className = "delete-btn";
         deleteBtn.addEventListener("click", function() {
-            eliminarComputadora(index);
+            eliminarComputadora(index, computadora);
         });
         accionesCell.appendChild(deleteBtn);
 
@@ -117,63 +102,52 @@ function mostrarComputadoras() {
     });
 }
 
-// Función para eliminar una computadora individualmente
-function eliminarComputadora(index) {
+// Función para eliminar computadora
+function eliminarComputadora(index, computadora) {
     let computadoras = JSON.parse(localStorage.getItem("computadoras")) || [];
-    computadoras.splice(index, 1);
+    const eliminada = computadoras.splice(index, 1)[0];
     localStorage.setItem("computadoras", JSON.stringify(computadoras));
     mostrarComputadoras();
 
     const fechaHoraEliminacion = new Date().toISOString();
     eliminada.fechaHoraEliminacion = fechaHoraEliminacion;
-    registrarEnExcel(eliminada, "Egreso");
+    registrarEnExcel([eliminada], "Egreso");
 }
 
-// Función para eliminar todos los registros de computadoras
+// Función para eliminar todas las computadoras
 document.getElementById("clearAllBtn").addEventListener("click", function() {
     let computadoras = JSON.parse(localStorage.getItem("computadoras")) || [];
     const fechaHoraEliminacion = new Date().toISOString();
-
-    computadoras.forEach(computadora => {
-        computadora.fechaHoraEliminacion = fechaHoraEliminacion;
-        registrarEnExcel(computadora, "Ingreso");
-    });
+    computadoras.forEach(computadora => computadora.fechaHoraEliminacion = fechaHoraEliminacion);
+    registrarEnExcel(computadoras, "Egreso");
 
     localStorage.removeItem("computadoras");
     mostrarComputadoras();
 });
 
-// Función para registrar en Excel y descargar el archivo
+// Función para registrar en Excel
 function registrarEnExcel(datos, tipo) {
-    const computadorasExcel = datos.map(computadora => ({
-        Responsable: computadora.responsable,
-        Curso: computadora.curso,
-        Modelo: computadora.modelo,
-        Prestador: computadora.prestador,
-        "Fecha y Hora de Registro": formatearFechaHora(computadora.fechaHora),
-        Tipo: tipo,  // Ingreso o Egreso
-        "Fecha y Hora de Eliminación": computadora.fechaHoraEliminacion ? formatearFechaHora(computadora.fechaHoraEliminacion) : ""
-    }));
-
-    const wb = XLSX.utils.book_new();  // Crear un nuevo libro de Excel
-    const ws = XLSX.utils.json_to_sheet(computadorasExcel);  // Convertir los datos JSON a hoja de Excel
-    XLSX.utils.book_append_sheet(wb, ws, "Computadoras");  // Añadir la hoja al libro
-    return wb;
+    const workbook = XLSX.utils.book_new();
+    const headers = ["Responsable", "Curso", "N° Notebook", "Prestador", "Fecha/Hora", "Tipo"];
+    const rows = datos.map(computadora => [
+        computadora.responsable,
+        computadora.curso,
+        computadora.modelo,
+        computadora.prestador,
+        formatearFechaHora(computadora.fechaHoraEliminacion || computadora.fechaHora),
+        tipo
+    ]);
+    rows.unshift(headers);
+    const worksheet = XLSX.utils.aoa_to_sheet(rows);
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Registros");
+    XLSX.writeFile(workbook, "Registros_Computadoras.xlsx");
 }
 
-// Función para descargar el archivo Excel
-function descargarExcel() {
+// Descargar el archivo Excel con los registros actuales
+document.getElementById("downloadExcelBtn").addEventListener("click", function() {
     const computadoras = JSON.parse(localStorage.getItem("computadoras")) || [];
-    const wb = registrarEnExcel(computadoras, "Ingreso");
+    registrarEnExcel(computadoras, "Ingreso");
+});
 
-    // Descarga el archivo Excel generado
-    XLSX.writeFile(wb, "computadoras_registro.xlsx");
-}
-
-// Asignar el evento al botón de descarga
-document.getElementById("downloadExcelBtn").addEventListener("click", descargarExcel);
-
-
-// Mostrar las computadoras al cargar la página
-mostrarComputadoras();
-
+// Cargar registros al cargar la página
+window.onload = mostrarComputadoras;

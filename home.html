@@ -12,6 +12,7 @@
         <img src="./recursos/thays-grande.png" alt="thays" width="100px">
         <h1>¡Registros Sala Info!</h1>
     </nav>
+
     <!-- Formulario para registrar computadoras -->
     <div class="register-container">
         <h2>Registrar Computadora/s</h2>
@@ -20,44 +21,22 @@
             <input type="text" id="responsable" placeholder="Ej: Facundo Dartwig" required>
 
             <label for="curso">Curso del responsable:</label>
-            <select id="curso" name="Curso" >
+            <select id="curso" name="Curso">
+                <!-- Opciones de curso -->
                 <option value="1°1°">1°1°</option>
                 <option value="1°2°">1°2°</option>
                 <option value="1°3°">1°3°</option>
                 <option value="1°4°">1°4°</option>
-                <option value="1°5°">1°5°</option>
-                <hr>                
-                <option value="2°1°">2°1°</option>
-                <option value="2°2°">2°2°</option>
-                <option value="2°3°">2°3°</option>
-                <option value="2°4°">2°4°</option>
-                <option value="2°5°">2°5°</option>
-                <option value="2°6°">2°6°</option>
-                <hr>
-                <option value="3°1°">3°1°</option>
-                <option value="3°2°">3°2°</option>
-                <option value="3°3°">3°3°</option>
-                <option value="3°4°">3°4°</option>
-                <option value="3°5°">3°5°</option>
-                <hr>
-                <option value="4°1°">4°1°</option>
-                <option value="4°2°">4°2°</option>
-                <option value="4°3°">4°3°</option>
-                <option value="4°4°">4°4°</option>
-                <hr>
-                <option value="5°1°">5°1°</option>
-                <option value="5°2°">5°2°</option>
+                <!-- Más cursos -->
                 <option value="5°3°">5°3°</option>
                 <option value="5°4°">5°4°</option>
             </select>
 
-            <!-- Múltiples campos de modelo -->
             <label for="modelo">N° De Notebook:</label>
             <div id="modelosContainer">
                 <input type="text" class="modelo" placeholder="Ej: 15" required>
             </div>
             <button type="button" id="addModelBtn">+</button>
-
 
             <label for="prestador">Prestador:</label>
             <select id="prestador" name="Prestadores" required>
@@ -66,15 +45,15 @@
                 <option value="Parrish">Parrish</option>
                 <option value="Guillermo">Guillermo</option>
             </select>
-  <!-- Campo para Fecha y Hora -->
-  <label for="fechaHora">Fecha y Hora de Registro:</label>
-  <input type="datetime-local" id="fechaHora" required>
+
+            <!-- Campo para Fecha y Hora -->
+            <label for="fechaHora">Fecha y Hora de Registro:</label>
+            <input type="datetime-local" id="fechaHora" required>
 
             <button type="submit">Registrar</button>
         </form>
     </div>
 
-    
     <!-- Tabla para mostrar los registros de computadoras -->
     <div class="table-container">
         <h2>Listado de Computadoras Registradas</h2>
@@ -90,7 +69,7 @@
                 </tr>
             </thead>
             <tbody>
-                <!-- Los registros de computadoras aparecen aca -->
+                <!-- Los registros de computadoras aparecen acá -->
             </tbody>
         </table>
         <button id="clearAllBtn">Eliminar Todos los Registros</button>
@@ -101,12 +80,11 @@
         </center>
     </div>
 
-
-
     <marquee behavior="" direction="right">
         <h3>Creado por Facundo Dartwig</h3>
     </marquee>
+
     <script src="./script-home.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.16.9/xlsx.full.min.js"></script
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.16.9/xlsx.full.min.js"></script>
 </body>
 </html>
